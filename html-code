@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#090911" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Dove andiamo?</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --glass: rgba(255, 255, 255, 0.105);
+      --glass-strong: rgba(255, 255, 255, 0.17);
+      --stroke: rgba(255, 255, 255, 0.16);
+      --text-soft: rgba(255, 255, 255, 0.68);
+      --text-faint: rgba(255, 255, 255, 0.46);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+      color: white;
+      background: #080810;
+      overflow-x: hidden;
+      padding: env(safe-area-inset-top) 18px env(safe-area-inset-bottom);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      filter: blur(20px);
+      opacity: 0.78;
+      pointer-events: none;
+      z-index: -2;
+      animation: floaty 8s ease-in-out infinite alternate;
+    }
+
+    body::before {
+      top: -90px;
+      left: -120px;
+      background: radial-gradient(circle, #ff2f92, transparent 64%);
+    }
+
+    body::after {
+      right: -110px;
+      bottom: -90px;
+      background: radial-gradient(circle, #22d3ee, transparent 62%);
+      animation-delay: -2s;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.09;
+      z-index: -1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+    }
+
+    .app {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 24px 0 34px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 190px;
+      border-radius: 34px;
+      padding: 24px;
+      margin-bottom: 16px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06)),
+        radial-gradient(circle at 15% 15%, rgba(255,255,255,0.34), transparent 22%);
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 28px 80px rgba(0,0,0,0.42);
+      backdrop-filter: blur(22px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.23), rgba(255,255,255,0));
+      right: -60px;
+      top: -50px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 850;
+      margin-bottom: 13px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #7dd3fc;
+      box-shadow: 0 0 20px #7dd3fc;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 52px;
+      line-height: 0.88;
+      letter-spacing: -0.075em;
+    }
+
+    .subtitle {
+      margin: 15px 0 0;
+      color: rgba(255,255,255,0.68);
+      line-height: 1.35;
+      font-size: 16px;
+      max-width: 300px;
+      font-weight: 600;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stat b {
+      display: block;
+      font-size: 18px;
+    }
+
+    .stat span {
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--stroke);
+      border-radius: 30px;
+      padding: 18px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.30);
+      margin-bottom: 14px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .label {
+      display: block;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.72);
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .hint {
+      color: var(--text-faint);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .chip {
+      border: 0;
+      color: white;
+      background: rgba(255, 255, 255, 0.105);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 11px 14px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+    }
+
+    .chip:active,
+    .main-btn:active,
+    .add-btn:active,
+    .ghost-btn:active {
+      transform: scale(0.96);
+    }
+
+    .chip.active {
+      background: white;
+      color: #0c0c12;
+      box-shadow: 0 8px 28px rgba(255, 255, 255, 0.18);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      border-radius: 21px;
+      padding: 16px;
+      font-size: 16px;
+      color: white;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.38);
+    }
+
+    .add-btn, .main-btn, .ghost-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 950;
+      transition: 0.16s ease;
+    }
+
+    .add-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 20px;
+      font-size: 26px;
+      color: #0b0b12;
+      background: white;
+      box-shadow: 0 10px 26px rgba(255,255,255,0.13);
+    }
+
+    .places {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .place {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 13px 13px 15px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: pop 0.2s ease both;
+    }
+
+    .place span {
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .remove {
+      border: 0;
+      color: rgba(255,255,255,0.52);
+      background: rgba(255,255,255,0.08);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .result {
+      position: relative;
+      overflow: hidden;
+      min-height: 230px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.17), rgba(255,255,255,0.06)),
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.22), transparent 34%);
+    }
+
+    .result::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.08);
+      pointer-events: none;
+    }
+
+    .result-title {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.62);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 900;
+      z-index: 1;
+    }
+
+    .winner {
+      font-size: clamp(42px, 13vw, 62px);
+      line-height: 0.9;
+      font-weight: 1000;
+      letter-spacing: -0.08em;
+      word-break: break-word;
+      text-shadow: 0 16px 46px rgba(0,0,0,0.38);
+      z-index: 1;
+    }
+
+    .reason {
+      color: rgba(255,255,255,0.68);
+      font-size: 16px;
+      line-height: 1.35;
+      max-width: 320px;
+      font-weight: 650;
+      z-index: 1;
+    }
+
+    .main-btn {
+      width: 100%;
+      margin-top: 6px;
+      padding: 19px;
+      font-size: 18px;
+      color: #090911;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #ffffff, #b6f3ff 46%, #ffc5e3);
+      box-shadow: 0 18px 46px rgba(255, 255, 255, 0.16), 0 12px 50px rgba(255, 47, 146, 0.14);
+    }
+
+    .actions {
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      justify-content:center;
+    }
+
+    .ghost-btn {
+      background: rgba(255, 255, 255, 0.105);
+      color: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(255,255,255,0.11);
+      padding: 12px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    .tiny {
+      text-align: center;
+      color: rgba(255,255,255,0.45);
+      font-size: 13px;
+      line-height: 1.35;
+      margin: 18px auto 0;
+      max-width: 310px;
+      font-weight: 650;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 8px;
+      height: 14px;
+      border-radius: 3px;
+      top: -20px;
+      z-index: 5;
+      pointer-events: none;
+      animation: fall 850ms ease-in forwards;
+    }
+
+    .shake {
+      animation: shake 0.48s ease both;
+    }
+
+    @keyframes floaty {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(18px, 28px, 0) scale(1.08); }
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0) scale(1); }
+      20% { transform: translateX(-7px) rotate(-1deg) scale(1.01); }
+      40% { transform: translateX(7px) rotate(1deg) scale(1.01); }
+      60% { transform: translateX(-4px) rotate(-1deg); }
+      80% { transform: translateX(4px) rotate(1deg); }
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(105vh) rotate(420deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <main class="app">
+    <section class="hero">
+      <div class="eyebrow"><span class="dot"></span> app da serata</div>
+      <h1>Dove<br>andiamo?</h1>
+      <p class="subtitle">Quando il gruppo non decide, decide il destino. Con un minimo di aesthetic.</p>
+      <div class="stat-row">
+        <div class="stat"><b id="placeCount">0</b><span>idee</span></div>
+        <div class="stat"><b id="vibeName">chill</b><span>vibe</span></div>
+        <div class="stat"><b>∞</b><span>drama</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <label class="label">vibe della serata</label>
+        <span class="hint">scegli mood</span>
+      </div>
+      <div class="chips" id="vibes">
+        <button class="chip active" data-vibe="chill">🌙 chill</button>
+        <button class="chip" data-vibe="casino">⚡ casino</button>
+        <button class="chip" data-vibe="economico">💸 budget</button>
+        <button class="chip" data-vibe="elegante">🥂 elegante</button>
+        <button class="chip" data-vibe="random">🎲 caos</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <label class="label">posti candidati</label>
+        <span class="hint">bar, food, attività</span>
+      </div>
+      <div class="row">
+        <input id="placeInput" placeholder="es. sushi, bar centro, bowling..." />
+        <button class="add-btn" id="addBtn" aria-label="Aggiungi posto">+</button>
+      </div>
+      <div class="places" id="places"></div>
+    </section>
+
+    <section class="card result" id="resultCard">
+      <div class="result-title">destinazione scelta</div>
+      <div class="winner" id="winner">?</div>
+      <div class="reason" id="reason">Aggiungi qualche opzione e lascia decidere all'app.</div>
+    </section>
+
+    <button class="main-btn" id="chooseBtn">✨ Decidi per noi</button>
+
+    <div class="actions">
+      <button class="ghost-btn" id="demoBtn">idee demo</button>
+      <button class="ghost-btn" id="luckyBtn">sono fortunato</button>
+      <button class="ghost-btn" id="clearBtn">reset</button>
+    </div>
+
+    <p class="tiny">Su iPhone: Safari → Condividi → Aggiungi alla schermata Home. Sembra un'app vera.</p>
+  </main>
+
+  <script>
+    const input = document.getElementById('placeInput');
+    const addBtn = document.getElementById('addBtn');
+    const placesBox = document.getElementById('places');
+    const chooseBtn = document.getElementById('chooseBtn');
+    const winner = document.getElementById('winner');
+    const reason = document.getElementById('reason');
+    const resultCard = document.getElementById('resultCard');
+    const clearBtn = document.getElementById('clearBtn');
+    const demoBtn = document.getElementById('demoBtn');
+    const luckyBtn = document.getElementById('luckyBtn');
+    const vibeButtons = document.querySelectorAll('.chip');
+    const placeCount = document.getElementById('placeCount');
+    const vibeName = document.getElementById('vibeName');
+
+    let selectedVibe = localStorage.getItem('selectedVibe') || 'chill';
+    let places = JSON.parse(localStorage.getItem('places') || '[]');
+
+    const vibeReasons = {
+      chill: 'Zero stress. Ci si siede, si parla male della vita e va benissimo così.',
+      casino: 'La serata chiede energia. Decisione leggermente pericolosa, quindi giusta.',
+      economico: 'Smart move: si esce senza distruggere il conto. Raro momento di maturità.',
+      elegante: 'Stasera si entra con passo sicuro e si finge di avere tutto sotto controllo.',
+      random: 'Nessuna spiegazione. Il caos ha parlato e va rispettato.'
+    };
+
+    const demoPlaces = ['pizza', 'sushi', 'bar in centro', 'gelato', 'cinema', 'bowling', 'kebab leggendario', 'passeggiata vista mare'];
+    const luckyIdeas = ['rooftop bar', 'karaoke', 'sala giochi', 'escape room', 'food truck', 'locale con musica live', 'gelateria aperta tardi', 'posto mai provato'];
+
+    function save() {
+      localStorage.setItem('places', JSON.stringify(places));
+      localStorage.setItem('selectedVibe', selectedVibe);
+    }
+
+    function renderVibes() {
+      vibeButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.vibe === selectedVibe);
+      });
+      vibeName.textContent = selectedVibe === 'economico' ? 'budget' : selectedVibe;
+    }
+
+    function renderPlaces() {
+      placesBox.innerHTML = '';
+      placeCount.textContent = places.length;
+
+      places.forEach((place, index) => {
+        const div = document.createElement('div');
+        div.className = 'place';
+        div.innerHTML = `<span>${escapeHtml(place)}</span><button class="remove" aria-label="Rimuovi">×</button>`;
+        div.querySelector('button').onclick = () => {
+          places.splice(index, 1);
+          save();
+          renderPlaces();
+        };
+        placesBox.appendChild(div);
+      });
+    }
+
+    function addPlace(valueFromButton) {
+      const value = (valueFromButton || input.value).trim();
+      if (!value) return;
+      places.push(value);
+      input.value = '';
+      save();
+      renderPlaces();
+      tinyVibe();
+    }
+
+    function choosePlace() {
+      if (places.length === 0) {
+        winner.textContent = 'no idee';
+        reason.textContent = 'Aggiungi almeno un posto. Non posso salvare il gruppo dal nulla cosmico.';
+        animateResult(false);
+        return;
+      }
+
+      let spins = Math.min(22, places.length * 5 + 10);
+      chooseBtn.disabled = true;
+      chooseBtn.textContent = 'sta decidendo...';
+
+      const interval = setInterval(() => {
+        const temporary = places[Math.floor(Math.random() * places.length)];
+        winner.textContent = temporary;
+        spins--;
+
+        if (spins <= 0) {
+          clearInterval(interval);
+          const finalChoice = places[Math.floor(Math.random() * places.length)];
+          winner.textContent = finalChoice;
+          reason.textContent = vibeReasons[selectedVibe];
+          chooseBtn.disabled = false;
+          chooseBtn.textContent = '✨ Decidi per noi';
+          animateResult(true);
+        }
+      }, 58);
+    }
+
+    function animateResult(withConfetti) {
+      resultCard.classList.remove('shake');
+      void resultCard.offsetWidth;
+      resultCard.classList.add('shake');
+      if ('vibrate' in navigator) navigator.vibrate(withConfetti ? [35, 25, 50] : 60);
+      if (withConfetti) confetti();
+    }
+
+    function confetti() {
+      const colors = ['#ffffff', '#ff4fa3', '#7dd3fc', '#fde68a', '#c4b5fd'];
+      for (let i = 0; i < 26; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 180 + 'ms';
+        piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 1200);
+      }
+    }
+
+    function tinyVibe() {
+      if ('vibrate' in navigator) navigator.vibrate(18);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    addBtn.addEventListener('click', () => addPlace());
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') addPlace();
+    });
+
+    chooseBtn.addEventListener('click', choosePlace);
+
+    clearBtn.addEventListener('click', () => {
+      places = [];
+      winner.textContent = '?';
+      reason.textContent = "Aggiungi qualche opzione e lascia decidere all'app.";
+      save();
+      renderPlaces();
+      tinyVibe();
+    });
+
+    demoBtn.addEventListener('click', () => {
+      places = [...demoPlaces];
+      save();
+      renderPlaces();
+      tinyVibe();
+    });
+
+    luckyBtn.addEventListener('click', () => {
+      const idea = luckyIdeas[Math.floor(Math.random() * luckyIdeas.length)];
+      addPlace(idea);
+    });
+
+    vibeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedVibe = btn.dataset.vibe;
+        save();
+        renderVibes();
+        tinyVibe();
+      });
+    });
+
+    renderVibes();
+    renderPlaces();
+  </script>
+</body>
+</html>
